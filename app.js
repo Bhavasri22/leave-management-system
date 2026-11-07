@@ -10,7 +10,13 @@ const app = express();
 const PORT = 5050;
 
 app.use(cors({
-    origin: "https://leave-management-system-public.vercel.app"
+    origin: [
+        "https://leave-management-system-public.vercel.app",
+        "http://localhost:5050",
+        "http://127.0.0.1:5050"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
