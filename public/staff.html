@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Staff Leave Management</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Staff Leave Management Portal</h1>
+
+        <p class="subtitle">
+            Manage and review student leave applications
+        </p>
+
+        <!-- STAFF LOGIN -->
+
+        <section id="staff-login">
+
+            <h2>Staff Login</h2>
+
+            <form id="staff-login-form">
+
+                <label for="staff-email">
+                    Staff Email
+                </label>
+
+                <input
+                    type="email"
+                    id="staff-email"
+                    placeholder="Enter staff email"
+                    required
+                >
+
+                <label for="staff-password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="staff-password"
+                    placeholder="Enter password"
+                    required
+                >
+
+                <button type="submit">
+                    Login
+                </button>
+
+            </form>
+
+        </section>
+
+        <!-- STAFF DASHBOARD -->
+
+        <section id="staff-dashboard" hidden>
+
+            <h2>Student Leave Requests</h2>
+
+            <p>
+                Review each application and approve or reject it.
+                If you reject an application, enter the reason.
+            </p>
+
+            <button type="button" id="load-requests">
+                Refresh Requests
+            </button>
+
+            <div id="requests-list">
+
+                <!-- Leave requests will appear here -->
+
+            </div>
+
+            <button type="button" id="staff-logout">
+                Logout
+            </button>
+
+        </section>
+
+        <!-- MESSAGE -->
+
+        <p id="staff-message" role="status"></p>
+
+        <!-- BACK TO STUDENT PAGE -->
+
+        <div class="staff-link">
+
+            <a href="/">
+                Back to Student Portal
+            </a>
+
+        </div>
+
+    </div>
+
+    <script src="staff.js"></script>
+
+</body>
+</html>

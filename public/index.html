@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Leave Management Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Student Leave Portal</h1>
+    <p class="subtitle">Manage your leave requests easily</p>
+
+    <!-- STUDENT REGISTRATION -->
+    <section id="register-section">
+
+        <h2>Create Student Account</h2>
+
+        <form id="register-form">
+
+            <label for="username">Student Name</label>
+            <input
+                type="text"
+                id="username"
+                placeholder="Enter your name"
+                required
+            >
+
+            <label for="reg-email">Email</label>
+            <input
+                type="email"
+                id="reg-email"
+                placeholder="Enter your email"
+                required
+            >
+
+            <label for="roll-number">Roll Number</label>
+            <input
+                type="text"
+                id="roll-number"
+                placeholder="Enter roll number"
+                required
+            >
+
+            <button type="submit">Register</button>
+
+        </form>
+
+        <p>
+            Already registered?
+            <button type="button" id="show-login">
+                Login here
+            </button>
+        </p>
+
+    </section>
+
+
+    <!-- STUDENT LOGIN -->
+    <section id="login-section" hidden>
+
+        <h2>Student Login</h2>
+
+        <form id="login-form">
+
+            <label for="login-email">Email</label>
+            <input
+                type="email"
+                id="login-email"
+                placeholder="Enter registered email"
+                required
+            >
+
+            <button type="submit">Login</button>
+
+        </form>
+
+        <p>
+            New student?
+            <button type="button" id="show-register">
+                Register here
+            </button>
+        </p>
+
+    </section>
+
+
+    <!-- STUDENT DASHBOARD -->
+    <section id="dashboard" hidden>
+
+        <h2>Welcome, <span id="display-name"></span>!</h2>
+
+        <p>
+            Roll Number:
+            <strong id="display-roll"></strong>
+        </p>
+
+
+        <!-- LEAVE BALANCE -->
+        <div class="balance-box">
+
+            <div class="balance-card">
+                <h3>Casual Leave</h3>
+                <p>
+                    <span id="casual-balance">10</span> Days
+                </p>
+            </div>
+
+            <div class="balance-card">
+                <h3>Medical Leave</h3>
+                <p>
+                    <span id="medical-balance">10</span> Days
+                </p>
+            </div>
+
+        </div>
+
+        <button type="button" id="refresh-balance">
+            Refresh Leave Balance
+        </button>
+
+
+        <!-- APPLY FOR LEAVE -->
+        <section class="leave-section">
+
+            <h2>Apply for Leave</h2>
+
+            <form id="leave-form" class="leave-form">
+
+                <label for="leave-type">Leave Type</label>
+
+                <select id="leave-type" required>
+                    <option value="casual">Casual Leave</option>
+                    <option value="medical">Medical Leave</option>
+                </select>
+
+
+                <label for="from-date">From Date</label>
+
+                <input
+                    type="date"
+                    id="from-date"
+                    required
+                >
+
+
+                <label for="to-date">To Date</label>
+
+                <input
+                    type="date"
+                    id="to-date"
+                    required
+                >
+
+
+                <label for="leave-days">Total Leave Days</label>
+
+                <input
+                    type="number"
+                    id="leave-days"
+                    placeholder="Automatically calculated"
+                    readonly
+                    required
+                >
+
+                <p id="date-message"></p>
+
+
+                <label for="leave-reason">Reason for Leave</label>
+
+                <textarea
+                    id="leave-reason"
+                    rows="4"
+                    placeholder="Enter your leave reason"
+                    required
+                ></textarea>
+
+
+                <button type="submit" class="submit-btn">
+                    Submit Leave Request
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- LEAVE STATUS -->
+        <section class="leave-status-section">
+
+            <h2>My Leave Requests</h2>
+
+            <p>
+                Check whether your leave request is
+                Pending, Approved or Rejected.
+            </p>
+
+            <button type="button" id="view-my-leaves">
+                View Leave Status
+            </button>
+
+            <div id="my-leaves"></div>
+
+        </section>
+
+
+        <!-- LOGOUT -->
+        <button type="button" id="logout">
+            Logout
+        </button>
+
+    </section>
+
+
+    <!-- MESSAGE -->
+    <p id="message" role="status"></p>
+
+
+    <!-- STAFF PORTAL LINK -->
+    <div class="staff-link">
+
+        <p>Are you a staff member?</p>
+
+        <a href="/staff.html">
+            Open Staff Portal
+        </a>
+
+    </div>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
