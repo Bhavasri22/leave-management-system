@@ -1,6 +1,8 @@
 
 let userId = "";
 
+const API_URL = "https://leave-management-system-l2w3.onrender.com/api";
+
 const $ = (id) => document.getElementById(id);
 
 function showMessage(message) {
@@ -13,18 +15,12 @@ function showSection(section) {
     $("dashboard").hidden = section !== "dashboard";
 }
 
-// Get today's date in local YYYY-MM-DD format
 function getToday() {
     const today = new Date();
 
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
 
-// Set minimum selectable dates
 function setupDateFields() {
     const today = getToday();
 
@@ -32,7 +28,6 @@ function setupDateFields() {
     $("to-date").min = today;
 }
 
-// Calculate leave days
 function calculateLeaveDays() {
     const fromDate = $("from-date").value;
     const toDate = $("to-date").value;
@@ -40,14 +35,11 @@ function calculateLeaveDays() {
     $("leave-days").value = "";
     $("date-message").textContent = "";
 
-    if (!fromDate || !toDate) {
-        return;
-    }
+    if (!fromDate || !toDate) return;
 
     if (toDate < fromDate) {
         $("date-message").textContent =
             "To Date must be after or equal to From Date.";
-
         $("date-message").style.color = "red";
         return;
     }
@@ -55,30 +47,20 @@ function calculateLeaveDays() {
     const start = new Date(fromDate + "T00:00:00");
     const end = new Date(toDate + "T00:00:00");
 
-    const difference = Math.round(
-        (end - start) / (1000 * 60 * 60 * 24)
-    );
-
-    const totalDays = difference + 1;
+    const totalDays =
+        Math.round((end - start) / 86400000) + 1;
 
     $("leave-days").value = totalDays;
-
-    $("date-message").textContent =
-        `Total leave days: ${totalDays}`;
-
+    $("date-message").textContent = `Total leave days: ${totalDays}`;
     $("date-message").style.color = "green";
 }
 
-// Date change events
 $("from-date").addEventListener("change", () => {
     const fromDate = $("from-date").value;
 
     $("to-date").min = fromDate || getToday();
 
-    if (
-        $("to-date").value &&
-        $("to-date").value < fromDate
-    ) {
+    if ($("to-date").value && $("to-date").value < fromDate) {
         $("to-date").value = "";
     }
 
@@ -87,20 +69,38 @@ $("from-date").addEventListener("change", () => {
 
 $("to-date").addEventListener("change", calculateLeaveDays);
 
-// API Request Function
-async function request(url, options = {}) {
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...options.headers
-        }
-    });
+// Common API request function
+async function request(endpoint, options = {}) {
+    let response;
+
+    try {
+        response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...options.headers
+            }
+        });
+    } catch (error) {
+        throw new Error(
+            "Cannot connect to backend. Please check Render server."
+        );
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+        const text = await response.text();
+
+        throw new Error(
+            `Backend returned a non-JSON response (${response.status}). Check API route and Render server.`
+        );
+    }
 
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || "Request failed");
+        throw new Error(data.message || `Request failed (${response.status})`);
     }
 
     return data;
@@ -111,7 +111,7 @@ $("register-form").addEventListener("submit", async (event) => {
     event.preventDefault();
 
     try {
-        const data = await request("/api/register", {
+        const data = await request("/register", {
             method: "POST",
             body: JSON.stringify({
                 username: $("username").value.trim(),
@@ -123,7 +123,7 @@ $("register-form").addEventListener("submit", async (event) => {
         $("register-form").reset();
 
         showSection("login");
-        showMessage(data.message);
+        showMessage(data.message || "Registration successful");
 
     } catch (error) {
         showMessage(error.message);
@@ -135,7 +135,7 @@ $("login-form").addEventListener("submit", async (event) => {
     event.preventDefault();
 
     try {
-        const data = await request("/api/login", {
+        const data = await request("/login", {
             method: "POST",
             body: JSON.stringify({
                 email: $("login-email").value.trim()
@@ -144,11 +144,14 @@ $("login-form").addEventListener("submit", async (event) => {
 
         userId = data.userId;
 
+        if (!userId) {
+            throw new Error("User ID missing from backend response.");
+        }
+
         $("display-name").textContent = data.username;
         $("display-roll").textContent = data.rollNumber;
 
         updateBalance(data);
-
         setupDateFields();
 
         showSection("dashboard");
@@ -183,24 +186,28 @@ $("leave-form").addEventListener("submit", async (event) => {
             return;
         }
 
-        const data = await request(`/api/apply-leave/${userId}`, {
+        if (!userId) {
+            showMessage("Please login first.");
+            return;
+        }
+
+        const data = await request(`/apply-leave/${userId}`, {
             method: "POST",
             body: JSON.stringify({
                 type: $("leave-type").value,
-                fromDate: fromDate,
-                toDate: toDate,
+                fromDate,
+                toDate,
                 reason: $("leave-reason").value.trim()
             })
         });
 
         $("leave-form").reset();
-
         $("leave-days").value = "";
         $("date-message").textContent = "";
 
         setupDateFields();
 
-        showMessage(data.message);
+        showMessage(data.message || "Leave request submitted");
 
         await loadMyLeaves();
 
@@ -212,13 +219,17 @@ $("leave-form").addEventListener("submit", async (event) => {
 // Display Student Leave Requests
 async function loadMyLeaves() {
     try {
-        const leaves = await request(`/api/my-leaves/${userId}`);
+        if (!userId) {
+            showMessage("Please login first.");
+            return;
+        }
+
+        const leaves = await request(`/my-leaves/${userId}`);
 
         const container = $("my-leaves");
-
         container.replaceChildren();
 
-        if (leaves.length === 0) {
+        if (!Array.isArray(leaves) || leaves.length === 0) {
             container.textContent = "No leave requests yet.";
             return;
         }
@@ -237,11 +248,8 @@ async function loadMyLeaves() {
             dates.textContent =
                 `From: ${new Date(leave.fromDate).toLocaleDateString()} | To: ${new Date(leave.toDate).toLocaleDateString()}`;
 
-            reason.textContent =
-                `Your Reason: ${leave.reason}`;
-
-            status.textContent =
-                `Status: ${leave.status}`;
+            reason.textContent = `Your Reason: ${leave.reason}`;
+            status.textContent = `Status: ${leave.status}`;
 
             card.append(details, dates, reason, status);
 
@@ -253,11 +261,8 @@ async function loadMyLeaves() {
                 status.style.color = "red";
 
                 const rejection = document.createElement("p");
-
                 rejection.textContent =
                     `Staff Rejection Reason: ${leave.rejectionReason || "Not provided"}`;
-
-                rejection.style.color = "red";
 
                 card.appendChild(rejection);
             }
@@ -281,10 +286,14 @@ $("view-my-leaves").addEventListener("click", loadMyLeaves);
 // Refresh Leave Balance
 $("refresh-balance").addEventListener("click", async () => {
     try {
-        const data = await request(`/api/leave-balance/${userId}`);
+        if (!userId) {
+            showMessage("Please login first.");
+            return;
+        }
+
+        const data = await request(`/leave-balance/${userId}`);
 
         updateBalance(data);
-
         showMessage("Leave balance refreshed");
 
     } catch (error) {
@@ -316,6 +325,5 @@ $("logout").addEventListener("click", () => {
     $("date-message").textContent = "";
 
     showSection("login");
-
     showMessage("Logged out successfully");
 });
