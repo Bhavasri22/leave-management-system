@@ -3,9 +3,13 @@ const mongoose = require("mongoose");
 
 async function connectDB() {
     try {
-        await mongoose.connect(
-            "mongodb://127.0.0.1:27017/leave-management"
-        );
+        const MONGO_URI = process.env.MONGO_URI;
+
+        if (!MONGO_URI) {
+            throw new Error("MONGO_URI is missing");
+        }
+
+        await mongoose.connect(MONGO_URI);
 
         console.log("MongoDB connected successfully");
     } catch (error) {
