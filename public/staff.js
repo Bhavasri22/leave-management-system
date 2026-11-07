@@ -1,6 +1,6 @@
 
 let staffToken = "";
-
+const API_URL = "https://leave-management-system-l2w3.onrender.com";
 const $ = (id) => document.getElementById(id);
 
 function showMessage(message) {
@@ -8,7 +8,7 @@ function showMessage(message) {
 }
 
 async function api(url, options = {}) {
-    const response = await fetch(url, {
+    const response = await fetch(`${API_URL}${url}`, {
         ...options,
         headers: {
             "Content-Type": "application/json",
